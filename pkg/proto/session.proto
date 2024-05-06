@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package session;
+
+option go_package = "github.com/Korpenter/assistand/internal/controller/grpc/pb";
+
+service SessionService {
+    rpc CreateSession (SessionRequest) returns (SessionResponse);
+    rpc GetSession (SessionRequest) returns (SessionResponse);
+}
+
+message SessionRequest {
+    string token = 1;
+}
+
+message SessionResponse {
+    string session_id = 1;
+    string state = 2;
+    bool success = 3;
+}
