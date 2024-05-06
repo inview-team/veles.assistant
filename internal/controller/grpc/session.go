@@ -10,7 +10,7 @@ import (
 )
 
 type SessionHandler struct {
-	pb.UnimplementedSessionServiceServer
+	pb.UnimplementedSessionHandlerServer
 	sessionService service.SessionService
 }
 
@@ -20,25 +20,12 @@ func NewSessionHandler(sessionService service.SessionService) *SessionHandler {
 	}
 }
 
-func (h *SessionHandler) CreateSession(ctx context.Context, req *pb.SessionRequest) (*pb.SessionResponse, error) {
-	sessionID, err := h.sessionService.CreateSession(req.Token)
+func (h *SessionHandler) StartSession(ctx context.Context, req *pb.StartSessionRequest) (*pb.StartSessionResponse, error) {
+	sessionID, err := h.sessionService.StartSession(req.Token)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create session: %v", err)
 	}
-	return &pb.SessionResponse{
+	return &pb.StartSessionResponse{
 		SessionId: sessionID,
-		Success:   true,
-	}, nil
-}
-
-func (h *SessionHandler) GetSession(ctx context.Context, req *pb.SessionRequest) (*pb.SessionResponse, error) {
-	session, err := h.sessionService.GetSession(req.Token)
-	if err != nil {
-		return nil, fmt.Errorf("failed to retrieve session: %v", err)
-	}
-	return &pb.SessionResponse{
-		SessionId: session.ID,
-		State:     session.State,
-		Success:   true,
 	}, nil
 }

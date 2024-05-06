@@ -60,6 +60,19 @@ func (a *App) Stop() error {
 		log.Info("gRPC server stopped")
 	}
 
+	if a.httpSrv != nil {
+		log.Info("Shutting down http server...")
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		if shutdownErr := a.httpSrv.Shutdown(ctx); shutdownErr != nil {
+			log.Errorf("Failed to shutdown http server: %v", shutdownErr)
+			err = shutdownErr
+		}
+
+		log.Info("Http server stopped")
+	}
+
 	if a.wsSrv != nil {
 		log.Info("Shutting down WebSocket server...")
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -97,10 +110,10 @@ func (a *App) startGRPC() {
 	a.grpcSrv = grpc.NewServer()
 
 	actionHandler := grpcapi.NewActionHandler(a.matchService, a.sessionService, a.executeService)
-	pb.RegisterActionServiceServer(a.grpcSrv, actionHandler)
+	pb.RegisterActionHandlerServer(a.grpcSrv, actionHandler)
 
 	sessionHandler := grpcapi.NewSessionHandler(a.sessionService)
-	pb.RegisterSessionServiceServer(a.grpcSrv, sessionHandler)
+	pb.RegisterSessionHandlerServer(a.grpcSrv, sessionHandler)
 
 	reflection.Register(a.grpcSrv)
 
@@ -115,7 +128,7 @@ func (a *App) startHTTP() {
 
 	router := mux.NewRouter()
 	httpHandler := httpapi.NewHttpHandler(a.sessionService, a.matchService, a.executeService)
-	router.HandleFunc("/api/sessions", httpHandler.InitSession).Methods("POST")
+	router.HandleFunc("/api/sessions", httpHandler.StartSession).Methods("POST")
 	router.HandleFunc("/api/actions", httpHandler.HandleAction).Methods("POST")
 
 	a.httpSrv = &http.Server{

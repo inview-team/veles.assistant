@@ -7,7 +7,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func (h *WsHandler) initSession(msg *Request, wsConn *websocket.Conn) ([]byte, error) {
+func (h *WsHandler) startSession(msg *Request, wsConn *websocket.Conn) ([]byte, error) {
 	var payload InitPayload
 	if err := json.Unmarshal(msg.Payload, &payload); err != nil {
 		return nil, fmt.Errorf("error unmarshalling init payload: %v", err)
@@ -16,7 +16,7 @@ func (h *WsHandler) initSession(msg *Request, wsConn *websocket.Conn) ([]byte, e
 	conn := NewWebSocketConnection(wsConn)
 
 	if payload.SessionID == "" {
-		sessionID, err := h.sessionService.CreateSession(payload.Token)
+		sessionID, err := h.sessionService.StartSession(payload.Token)
 		if err != nil {
 			return nil, fmt.Errorf("error creating session: %v", err)
 		}
@@ -30,4 +30,17 @@ func (h *WsHandler) initSession(msg *Request, wsConn *websocket.Conn) ([]byte, e
 	}
 	h.hub.Register(session.ID, conn)
 	return []byte(fmt.Sprintf("session_id: %s, state: %s", session.ID, session.State)), nil
+}
+
+func (h *WsHandler) updateSessionToken(msg *Request, wsConn *websocket.Conn) ([]byte, error) {
+	var payload UpdateTokenPayload
+	if err := json.Unmarshal(msg.Payload, &payload); err != nil {
+		return nil, fmt.Errorf("error unmarshalling update token payload: %v", err)
+	}
+
+	if err := h.sessionService.UpdateSessionToken(payload.SessionID, payload.Token); err != nil {
+		return nil, fmt.Errorf("error updating session: %v", err)
+	}
+
+	return nil, nil
 }

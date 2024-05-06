@@ -18,86 +18,86 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// ActionServiceClient is the client API for ActionService service.
+// ActionHandlerClient is the client API for ActionHandler service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type ActionServiceClient interface {
-	GetVoiceInput(ctx context.Context, in *ActionRequest, opts ...grpc.CallOption) (*ActionResponse, error)
+type ActionHandlerClient interface {
+	DoAction(ctx context.Context, in *ActionRequest, opts ...grpc.CallOption) (*ActionResponse, error)
 }
 
-type actionServiceClient struct {
+type actionHandlerClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewActionServiceClient(cc grpc.ClientConnInterface) ActionServiceClient {
-	return &actionServiceClient{cc}
+func NewActionHandlerClient(cc grpc.ClientConnInterface) ActionHandlerClient {
+	return &actionHandlerClient{cc}
 }
 
-func (c *actionServiceClient) GetVoiceInput(ctx context.Context, in *ActionRequest, opts ...grpc.CallOption) (*ActionResponse, error) {
+func (c *actionHandlerClient) DoAction(ctx context.Context, in *ActionRequest, opts ...grpc.CallOption) (*ActionResponse, error) {
 	out := new(ActionResponse)
-	err := c.cc.Invoke(ctx, "/voice.ActionService/GetVoiceInput", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/voice.ActionHandler/DoAction", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// ActionServiceServer is the server API for ActionService service.
-// All implementations must embed UnimplementedActionServiceServer
+// ActionHandlerServer is the server API for ActionHandler service.
+// All implementations must embed UnimplementedActionHandlerServer
 // for forward compatibility
-type ActionServiceServer interface {
-	GetVoiceInput(context.Context, *ActionRequest) (*ActionResponse, error)
-	mustEmbedUnimplementedActionServiceServer()
+type ActionHandlerServer interface {
+	DoAction(context.Context, *ActionRequest) (*ActionResponse, error)
+	mustEmbedUnimplementedActionHandlerServer()
 }
 
-// UnimplementedActionServiceServer must be embedded to have forward compatible implementations.
-type UnimplementedActionServiceServer struct {
+// UnimplementedActionHandlerServer must be embedded to have forward compatible implementations.
+type UnimplementedActionHandlerServer struct {
 }
 
-func (UnimplementedActionServiceServer) GetVoiceInput(context.Context, *ActionRequest) (*ActionResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetVoiceInput not implemented")
+func (UnimplementedActionHandlerServer) DoAction(context.Context, *ActionRequest) (*ActionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DoAction not implemented")
 }
-func (UnimplementedActionServiceServer) mustEmbedUnimplementedActionServiceServer() {}
+func (UnimplementedActionHandlerServer) mustEmbedUnimplementedActionHandlerServer() {}
 
-// UnsafeActionServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to ActionServiceServer will
+// UnsafeActionHandlerServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to ActionHandlerServer will
 // result in compilation errors.
-type UnsafeActionServiceServer interface {
-	mustEmbedUnimplementedActionServiceServer()
+type UnsafeActionHandlerServer interface {
+	mustEmbedUnimplementedActionHandlerServer()
 }
 
-func RegisterActionServiceServer(s grpc.ServiceRegistrar, srv ActionServiceServer) {
-	s.RegisterService(&ActionService_ServiceDesc, srv)
+func RegisterActionHandlerServer(s grpc.ServiceRegistrar, srv ActionHandlerServer) {
+	s.RegisterService(&ActionHandler_ServiceDesc, srv)
 }
 
-func _ActionService_GetVoiceInput_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ActionHandler_DoAction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ActionRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ActionServiceServer).GetVoiceInput(ctx, in)
+		return srv.(ActionHandlerServer).DoAction(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/voice.ActionService/GetVoiceInput",
+		FullMethod: "/voice.ActionHandler/DoAction",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ActionServiceServer).GetVoiceInput(ctx, req.(*ActionRequest))
+		return srv.(ActionHandlerServer).DoAction(ctx, req.(*ActionRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// ActionService_ServiceDesc is the grpc.ServiceDesc for ActionService service.
+// ActionHandler_ServiceDesc is the grpc.ServiceDesc for ActionHandler service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var ActionService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "voice.ActionService",
-	HandlerType: (*ActionServiceServer)(nil),
+var ActionHandler_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "voice.ActionHandler",
+	HandlerType: (*ActionHandlerServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetVoiceInput",
-			Handler:    _ActionService_GetVoiceInput_Handler,
+			MethodName: "DoAction",
+			Handler:    _ActionHandler_DoAction_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -4,8 +4,8 @@ package voice;
 
 option go_package = "github.com/Korpenter/assistand/internal/controller/grpc/pb";
 
-service ActionService {
-    rpc GetVoiceInput (ActionRequest) returns (ActionResponse);
+service ActionHandler {
+    rpc DoAction (ActionRequest) returns (ActionResponse);
 }
 
 message ActionRequest {

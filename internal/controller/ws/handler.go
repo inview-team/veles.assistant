@@ -88,9 +88,10 @@ func (h *WsHandler) HandleWs(w http.ResponseWriter, req *http.Request) {
 }
 
 func (h *WsHandler) initHandlers() {
-	h.handlers["init"] = h.initSession
+	h.handlers["init"] = h.startSession
 	h.handlers["action"] = h.handleAction
 	h.handlers["default"] = h.handleDefault
+	h.handlers["update_token"] = h.updateSessionToken
 }
 
 func (h *WsHandler) HandleMessage(rawMsg []byte, wsConn *websocket.Conn) ([]byte, error) {

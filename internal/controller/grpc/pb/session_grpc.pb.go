@@ -18,122 +18,122 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// SessionServiceClient is the client API for SessionService service.
+// SessionHandlerClient is the client API for SessionHandler service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type SessionServiceClient interface {
-	CreateSession(ctx context.Context, in *SessionRequest, opts ...grpc.CallOption) (*SessionResponse, error)
-	GetSession(ctx context.Context, in *SessionRequest, opts ...grpc.CallOption) (*SessionResponse, error)
+type SessionHandlerClient interface {
+	StartSession(ctx context.Context, in *StartSessionRequest, opts ...grpc.CallOption) (*StartSessionResponse, error)
+	UpdateSessionToken(ctx context.Context, in *UpdateSessionTokenRequest, opts ...grpc.CallOption) (*UpdateSessionTokenResponse, error)
 }
 
-type sessionServiceClient struct {
+type sessionHandlerClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewSessionServiceClient(cc grpc.ClientConnInterface) SessionServiceClient {
-	return &sessionServiceClient{cc}
+func NewSessionHandlerClient(cc grpc.ClientConnInterface) SessionHandlerClient {
+	return &sessionHandlerClient{cc}
 }
 
-func (c *sessionServiceClient) CreateSession(ctx context.Context, in *SessionRequest, opts ...grpc.CallOption) (*SessionResponse, error) {
-	out := new(SessionResponse)
-	err := c.cc.Invoke(ctx, "/session.SessionService/CreateSession", in, out, opts...)
+func (c *sessionHandlerClient) StartSession(ctx context.Context, in *StartSessionRequest, opts ...grpc.CallOption) (*StartSessionResponse, error) {
+	out := new(StartSessionResponse)
+	err := c.cc.Invoke(ctx, "/session.SessionHandler/StartSession", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *sessionServiceClient) GetSession(ctx context.Context, in *SessionRequest, opts ...grpc.CallOption) (*SessionResponse, error) {
-	out := new(SessionResponse)
-	err := c.cc.Invoke(ctx, "/session.SessionService/GetSession", in, out, opts...)
+func (c *sessionHandlerClient) UpdateSessionToken(ctx context.Context, in *UpdateSessionTokenRequest, opts ...grpc.CallOption) (*UpdateSessionTokenResponse, error) {
+	out := new(UpdateSessionTokenResponse)
+	err := c.cc.Invoke(ctx, "/session.SessionHandler/UpdateSessionToken", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// SessionServiceServer is the server API for SessionService service.
-// All implementations must embed UnimplementedSessionServiceServer
+// SessionHandlerServer is the server API for SessionHandler service.
+// All implementations must embed UnimplementedSessionHandlerServer
 // for forward compatibility
-type SessionServiceServer interface {
-	CreateSession(context.Context, *SessionRequest) (*SessionResponse, error)
-	GetSession(context.Context, *SessionRequest) (*SessionResponse, error)
-	mustEmbedUnimplementedSessionServiceServer()
+type SessionHandlerServer interface {
+	StartSession(context.Context, *StartSessionRequest) (*StartSessionResponse, error)
+	UpdateSessionToken(context.Context, *UpdateSessionTokenRequest) (*UpdateSessionTokenResponse, error)
+	mustEmbedUnimplementedSessionHandlerServer()
 }
 
-// UnimplementedSessionServiceServer must be embedded to have forward compatible implementations.
-type UnimplementedSessionServiceServer struct {
+// UnimplementedSessionHandlerServer must be embedded to have forward compatible implementations.
+type UnimplementedSessionHandlerServer struct {
 }
 
-func (UnimplementedSessionServiceServer) CreateSession(context.Context, *SessionRequest) (*SessionResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateSession not implemented")
+func (UnimplementedSessionHandlerServer) StartSession(context.Context, *StartSessionRequest) (*StartSessionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StartSession not implemented")
 }
-func (UnimplementedSessionServiceServer) GetSession(context.Context, *SessionRequest) (*SessionResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetSession not implemented")
+func (UnimplementedSessionHandlerServer) UpdateSessionToken(context.Context, *UpdateSessionTokenRequest) (*UpdateSessionTokenResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateSessionToken not implemented")
 }
-func (UnimplementedSessionServiceServer) mustEmbedUnimplementedSessionServiceServer() {}
+func (UnimplementedSessionHandlerServer) mustEmbedUnimplementedSessionHandlerServer() {}
 
-// UnsafeSessionServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to SessionServiceServer will
+// UnsafeSessionHandlerServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to SessionHandlerServer will
 // result in compilation errors.
-type UnsafeSessionServiceServer interface {
-	mustEmbedUnimplementedSessionServiceServer()
+type UnsafeSessionHandlerServer interface {
+	mustEmbedUnimplementedSessionHandlerServer()
 }
 
-func RegisterSessionServiceServer(s grpc.ServiceRegistrar, srv SessionServiceServer) {
-	s.RegisterService(&SessionService_ServiceDesc, srv)
+func RegisterSessionHandlerServer(s grpc.ServiceRegistrar, srv SessionHandlerServer) {
+	s.RegisterService(&SessionHandler_ServiceDesc, srv)
 }
 
-func _SessionService_CreateSession_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SessionRequest)
+func _SessionHandler_StartSession_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StartSessionRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(SessionServiceServer).CreateSession(ctx, in)
+		return srv.(SessionHandlerServer).StartSession(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/session.SessionService/CreateSession",
+		FullMethod: "/session.SessionHandler/StartSession",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SessionServiceServer).CreateSession(ctx, req.(*SessionRequest))
+		return srv.(SessionHandlerServer).StartSession(ctx, req.(*StartSessionRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _SessionService_GetSession_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SessionRequest)
+func _SessionHandler_UpdateSessionToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateSessionTokenRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(SessionServiceServer).GetSession(ctx, in)
+		return srv.(SessionHandlerServer).UpdateSessionToken(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/session.SessionService/GetSession",
+		FullMethod: "/session.SessionHandler/UpdateSessionToken",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SessionServiceServer).GetSession(ctx, req.(*SessionRequest))
+		return srv.(SessionHandlerServer).UpdateSessionToken(ctx, req.(*UpdateSessionTokenRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// SessionService_ServiceDesc is the grpc.ServiceDesc for SessionService service.
+// SessionHandler_ServiceDesc is the grpc.ServiceDesc for SessionHandler service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var SessionService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "session.SessionService",
-	HandlerType: (*SessionServiceServer)(nil),
+var SessionHandler_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "session.SessionHandler",
+	HandlerType: (*SessionHandlerServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "CreateSession",
-			Handler:    _SessionService_CreateSession_Handler,
+			MethodName: "StartSession",
+			Handler:    _SessionHandler_StartSession_Handler,
 		},
 		{
-			MethodName: "GetSession",
-			Handler:    _SessionService_GetSession_Handler,
+			MethodName: "UpdateSessionToken",
+			Handler:    _SessionHandler_UpdateSessionToken_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

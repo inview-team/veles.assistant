@@ -1,24 +1,9 @@
 package entities
 
-import "net/http"
-
-type ActionNode struct {
-	Name     string
-	Action   func(*Session, map[string]string) (string, error)
-	Children []*ActionNode
-}
+import "go.mongodb.org/mongo-driver/bson/primitive"
 
 type Action struct {
-	URL           string
-	Method        string
-	Headers       map[string]string
-	BodyTemplate  string
-	ResponseParse func(http.Response) (string, map[string]string)
-}
-
-type BackendService struct {
-	URL           string
-	Method        string
-	Headers       map[string]string
-	ResponseParse func(http.Response) (string, map[string]string)
+	ID   primitive.ObjectID `bson:"_id,omitempty"`
+	Type string             `bson:"type"`
+	// Add more fields as necessary.
 }

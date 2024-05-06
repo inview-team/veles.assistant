@@ -9,7 +9,7 @@ import (
 )
 
 type ActionHandler struct {
-	pb.UnimplementedActionServiceServer
+	pb.UnimplementedActionHandlerServer
 	matchService   service.MatchService
 	sessionService service.SessionService
 	executeService service.ExecuteService
@@ -23,7 +23,7 @@ func NewActionHandler(matcher service.MatchService, session service.SessionServi
 	}
 }
 
-func (h *ActionHandler) SendVoiceInput(ctx context.Context, req *pb.ActionRequest) (*pb.ActionResponse, error) {
+func (h *ActionHandler) HandleAction(ctx context.Context, req *pb.ActionRequest) (*pb.ActionResponse, error) {
 	session, err := h.sessionService.GetSession(req.SessionId)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get session: %v", err)

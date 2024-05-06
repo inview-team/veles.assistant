@@ -13,10 +13,9 @@ type HttpHandler struct {
 }
 
 func NewHttpHandler(ss service.SessionService, ms service.MatchService, es service.ExecuteService) *HttpHandler {
-	handler := &HttpHandler{
+	return &HttpHandler{
 		sessionService: ss,
-		executeService: es,
 		matchService:   ms,
+		executeService: es,
 	}
-	return handler
 }

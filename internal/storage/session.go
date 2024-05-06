@@ -12,6 +12,7 @@ import (
 
 type SessionStorage interface {
 	CreateSession(session *entities.Session) error
+	UpdateSession(session *entities.Session) error
 	GetSession(sessionID string) (*entities.Session, error)
 	DeleteSession(sessionID string) error
 }
@@ -29,6 +30,19 @@ func NewRedisSessionStorage(client *redis.Client, ttl int) *RedisSessionStorage 
 }
 
 func (r *RedisSessionStorage) CreateSession(session *entities.Session) error {
+	ctx := context.Background()
+	data, err := json.Marshal(session)
+	if err != nil {
+		return fmt.Errorf("error marshalling session: %v", err)
+	}
+	status := r.client.Set(ctx, session.ID, data, r.ttl)
+	if err := status.Err(); err != nil {
+		return fmt.Errorf("error saving session to redis: %v", err)
+	}
+	return nil
+}
+
+func (r *RedisSessionStorage) UpdateSession(session *entities.Session) error {
 	ctx := context.Background()
 	data, err := json.Marshal(session)
 	if err != nil {
