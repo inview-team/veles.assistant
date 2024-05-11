@@ -1,8 +1,8 @@
 package http
 
 import (
-	"github.com/Korpenter/assistand/internal/service"
 	"github.com/gorilla/websocket"
+	"github.com/inview-team/veles.assistant/internal/service"
 )
 
 type HttpHandler struct {

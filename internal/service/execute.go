@@ -1,7 +1,7 @@
 package service
 
 import (
-	"github.com/Korpenter/assistand/internal/entities"
+	"github.com/inview-team/veles.assistant/internal/entities"
 )
 
 type ExecuteService interface {

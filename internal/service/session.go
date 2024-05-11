@@ -3,14 +3,15 @@ package service
 import (
 	"fmt"
 
-	"github.com/Korpenter/assistand/internal/entities"
-	"github.com/Korpenter/assistand/internal/storage"
 	"github.com/google/uuid"
+	"github.com/inview-team/veles.assistant/internal/entities"
+	"github.com/inview-team/veles.assistant/internal/storage"
 )
 
 type SessionService interface {
 	StartSession(token string) (string, error)
 	UpdateSessionToken(sessionID, token string) error
+	UpdateSessionState(sessionID, state string) error
 	GetSession(sessionID string) (*entities.Session, error)
 	CloseSession(sessionID string) error
 }
@@ -42,6 +43,18 @@ func (ss *SessionServiceImpl) UpdateSessionToken(sessionID, token string) error 
 		return fmt.Errorf("failed to retrieve session: %v", err)
 	}
 	session.Token = token
+	if err := ss.storage.UpdateSession(session); err != nil {
+		return fmt.Errorf("failed to update session: %v", err)
+	}
+	return nil
+}
+
+func (ss *SessionServiceImpl) UpdateSessionState(sessionID, state string) error {
+	session, err := ss.storage.GetSession(sessionID)
+	if err != nil {
+		return fmt.Errorf("failed to retrieve session: %v", err)
+	}
+	session.State = state
 	if err := ss.storage.UpdateSession(session); err != nil {
 		return fmt.Errorf("failed to update session: %v", err)
 	}

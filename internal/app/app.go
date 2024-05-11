@@ -10,24 +10,19 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Korpenter/assistand/internal/config"
-	grpcapi "github.com/Korpenter/assistand/internal/controller/grpc"
-	"github.com/Korpenter/assistand/internal/controller/grpc/pb"
-	httpapi "github.com/Korpenter/assistand/internal/controller/http"
-	"github.com/Korpenter/assistand/internal/controller/ws"
-	"github.com/Korpenter/assistand/internal/hub"
-	"github.com/Korpenter/assistand/internal/service"
 	"github.com/gorilla/mux"
+	"github.com/inview-team/veles.assistant/internal/config"
+	httpapi "github.com/inview-team/veles.assistant/internal/controller/http"
+	"github.com/inview-team/veles.assistant/internal/controller/ws"
+	"github.com/inview-team/veles.assistant/internal/hub"
+	"github.com/inview-team/veles.assistant/internal/service"
 	log "github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
 )
 
 type App struct {
 	config         *config.Config
 	wsSrv          *http.Server
 	httpSrv        *http.Server
-	grpcSrv        *grpc.Server
 	sessionService service.SessionService
 	matchService   service.MatchService
 	executeService service.ExecuteService
@@ -45,7 +40,6 @@ func NewApp(cfg *config.Config, ss service.SessionService, ms service.MatchServi
 }
 
 func (a *App) Start() {
-	go a.startGRPC()
 	go a.startWS()
 	go a.startHTTP()
 	a.awaitSignals()
@@ -53,13 +47,6 @@ func (a *App) Start() {
 
 func (a *App) Stop() error {
 	var err error
-
-	if a.grpcSrv != nil {
-		log.Info("Shutting down gRPC server...")
-		a.grpcSrv.GracefulStop()
-		log.Info("gRPC server stopped")
-	}
-
 	if a.httpSrv != nil {
 		log.Info("Shutting down http server...")
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -101,35 +88,13 @@ func (a *App) awaitSignals() {
 	}
 }
 
-func (a *App) startGRPC() {
-	address := fmt.Sprintf(":%s", a.config.GRPCPort)
-	lis, err := net.Listen("tcp", address)
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
-	}
-	a.grpcSrv = grpc.NewServer()
-
-	actionHandler := grpcapi.NewActionHandler(a.matchService, a.sessionService, a.executeService)
-	pb.RegisterActionHandlerServer(a.grpcSrv, actionHandler)
-
-	sessionHandler := grpcapi.NewSessionHandler(a.sessionService)
-	pb.RegisterSessionHandlerServer(a.grpcSrv, sessionHandler)
-
-	reflection.Register(a.grpcSrv)
-
-	log.Infof("gRPC server started on %s", address)
-	if err := a.grpcSrv.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
-	}
-}
-
 func (a *App) startHTTP() {
 	log.Info("Starting HTTP server")
 
 	router := mux.NewRouter()
 	httpHandler := httpapi.NewHttpHandler(a.sessionService, a.matchService, a.executeService)
-	router.HandleFunc("/api/sessions", httpHandler.StartSession).Methods("POST")
-	router.HandleFunc("/api/actions", httpHandler.HandleAction).Methods("POST")
+	router.HandleFunc("/api/v1/sessions", httpHandler.StartSession).Methods("POST")
+	router.HandleFunc("/api/v1/actions", httpHandler.HandleAction).Methods("POST")
 
 	a.httpSrv = &http.Server{
 		Addr:    fmt.Sprintf("%s:%d", a.config.HTTPHost, a.config.HTTPPort),

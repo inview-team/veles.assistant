@@ -1,7 +1,7 @@
 package entities
 
 type Session struct {
-	ID    string
-	Token string
-	State string
+	ID    string `json:"id"`
+	Token string `json:"token"`
+	State string `json:"state"`
 }

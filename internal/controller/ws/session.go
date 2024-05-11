@@ -29,7 +29,7 @@ func (h *WsHandler) startSession(msg *Request, wsConn *websocket.Conn) ([]byte, 
 		return nil, fmt.Errorf("error retrieving session: %v", err)
 	}
 	h.hub.Register(session.ID, conn)
-	return []byte(fmt.Sprintf("session_id: %s, state: %s", session.ID, session.State)), nil
+	return []byte(fmt.Sprintf("session_id: %s, state: %s", session.ID)), nil
 }
 
 func (h *WsHandler) updateSessionToken(msg *Request, wsConn *websocket.Conn) ([]byte, error) {

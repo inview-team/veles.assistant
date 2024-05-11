@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+option go_package = "github.com/inview-team/veles.assistantt/pkg/proto/gen/pb";
+
+service Matcher {
+  rpc MatchScenario (MatchScenarioRequest) returns (MatchScenarioResponse);
+}
+
+message MatchScenarioRequest {
+  string user_prompt = 1;
+}
+
+message MatchScenarioResponse {
+  string scenario_name = 1;
+  string root_id = 2;
+}

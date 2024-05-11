@@ -1,8 +1,8 @@
 package ws
 
 import (
-	"github.com/Korpenter/assistand/internal/hub"
 	"github.com/gorilla/websocket"
+	"github.com/inview-team/veles.assistant/internal/hub"
 )
 
 type WebSocketConnection struct {

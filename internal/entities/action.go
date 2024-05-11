@@ -1,9 +1,21 @@
 package entities
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
+type ActionType int
+
+const (
+	HTTP ActionType = iota + 1
+	Condition
+)
 
 type Action struct {
-	ID   primitive.ObjectID `bson:"_id,omitempty"`
-	Type string             `bson:"type"`
-	// Add more fields as necessary.
+	ID             string     `bson:"_id,omitempty"`
+	Type           ActionType `bson:"type"`
+	Next           NextAction `bson:"next"`
+	InputTemplate  string     `bson:"input_template"`
+	OutputTemplate string     `bson:"output_template"`
+}
+
+type NextAction struct {
+	OnSuccess string `bson:"on_success"`
+	OnFailure string `bson:"on_failure"`
 }

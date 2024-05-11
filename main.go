@@ -1,14 +1,21 @@
 package main
 
 import (
+	"context"
 	"flag"
+	"log"
+	"time"
 
-	"github.com/Korpenter/assistand/internal/app"
-	"github.com/Korpenter/assistand/internal/config"
-	"github.com/Korpenter/assistand/internal/hub"
-	"github.com/Korpenter/assistand/internal/service"
-	"github.com/Korpenter/assistand/internal/storage"
+	"github.com/inview-team/veles.assistant/internal/app"
+	"github.com/inview-team/veles.assistant/internal/config"
+	"github.com/inview-team/veles.assistant/internal/hub"
+	"github.com/inview-team/veles.assistant/internal/service"
+	"github.com/inview-team/veles.assistant/internal/storage"
 	"github.com/redis/go-redis/v9"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 func main() {
@@ -23,12 +30,32 @@ func main() {
 	})
 
 	hub := hub.NewMemHub()
-
 	sessionStore := storage.NewRedisSessionStorage(redisClient, cfg.SessionDuration)
 	sessionService := service.NewSessionService(sessionStore)
-	matchService := service.NewMatchService()
+
+	conn, err := grpc.Dial(cfg.MatchServiceGRPCAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("Failed to connect to match service gRPC server: %v", err)
+	}
+	defer conn.Close()
+
+	mongoClient, err := mongo.Connect(context.Background(), options.Client().ApplyURI(cfg.MongoURI))
+	if err != nil {
+		log.Fatalf("Failed to create MongoDB client: %v", err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := mongoClient.Ping(ctx, nil); err != nil {
+		log.Fatalf("Failed to connect to MongoDB: %v", err)
+	}
+	database := mongoClient.Database(cfg.MongoDBName)
+	actionStorage := storage.NewMongoActionStorage(database, cfg.MongoActionCollection)
+
+	matchService := service.NewMatchService(actionStorage, conn)
+
 	executeService := service.NewExecuteService()
 
 	app := app.NewApp(cfg, sessionService, matchService, executeService, hub)
+
 	app.Start()
 }

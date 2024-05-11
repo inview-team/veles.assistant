@@ -1,6 +1,7 @@
 package ws
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -18,15 +19,16 @@ func (h *WsHandler) handleAction(msg *Request, wsConn *websocket.Conn) ([]byte, 
 		return nil, fmt.Errorf("failed to get session: %v", err)
 	}
 
-	action, err := h.matchService.MatchAction(session, payload.Action)
+	action, err := h.matchService.ProcessMessage(context.Background(), session, payload.Action)
 	if err != nil {
-		return nil, fmt.Errorf("failed to match action: %v", err)
+		return nil, fmt.Errorf("failed to process message: %v", err)
 	}
 
-	result, err := h.executeService.ExecuteAction(session, action)
+	// Update session with new state (if necessary)
+	err = h.sessionService.UpdateSessionState(session.ID, action.ID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to execute action: %v", err)
+		return nil, fmt.Errorf("failed to update session: %v", err)
 	}
 
-	return json.Marshal(result)
+	return json.Marshal(action)
 }

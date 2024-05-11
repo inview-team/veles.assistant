@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/Korpenter/assistand/internal/hub"
-	"github.com/Korpenter/assistand/internal/service"
 	"github.com/gorilla/websocket"
+	"github.com/inview-team/veles.assistant/internal/hub"
+	"github.com/inview-team/veles.assistant/internal/service"
 	log "github.com/sirupsen/logrus"
 )
 

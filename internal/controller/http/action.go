@@ -28,19 +28,19 @@ func (h *HttpHandler) HandleAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	action, err := h.matchService.MatchAction(session, request.Action)
+	action, err := h.matchService.ProcessMessage(r.Context(), session, request.Action)
 	if err != nil {
 		http.Error(w, "Action Match Failed: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	result, err := h.executeService.ExecuteAction(session, action)
-	if err != nil {
-		http.Error(w, "Action Execution Failed: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
+	//result, err := h.executeService.ExecuteAction(session, action)
+	//if err != nil {
+	//	http.Error(w, "Action Execution Failed: "+err.Error(), http.StatusInternalServerError)
+	//	return
+	//}
 
-	response := ActionResult{Result: result}
+	response := ActionResult{Result: action.ID}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }

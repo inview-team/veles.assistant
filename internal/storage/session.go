@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Korpenter/assistand/internal/entities"
+	"github.com/inview-team/veles.assistant/internal/entities"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -19,7 +19,7 @@ type SessionStorage interface {
 
 type RedisSessionStorage struct {
 	client *redis.Client
-	ttl    time.Duration // TTL for sessions
+	ttl    time.Duration
 }
 
 func NewRedisSessionStorage(client *redis.Client, ttl int) *RedisSessionStorage {
