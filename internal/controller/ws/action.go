@@ -21,7 +21,7 @@ func (h *WsHandler) handleAction(msg *Request, wsConn *websocket.Conn) ([]byte, 
 		return jsonResponse(http.StatusInternalServerError, fmt.Sprintf("failed to get session: %v", err), nil)
 	}
 
-	action, err := h.matchService.ProcessMessage(context.Background(), session, payload.Action)
+	action, err := h.actionService.ProcessMessage(context.Background(), session, payload.Action)
 	if err != nil {
 		return jsonResponse(http.StatusInternalServerError, fmt.Sprintf("failed to process message: %v", err), nil)
 	}

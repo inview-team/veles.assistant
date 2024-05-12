@@ -10,23 +10,23 @@ import (
 	"google.golang.org/grpc"
 )
 
-type MatchService interface {
+type ActionService interface {
 	ProcessMessage(ctx context.Context, session *entities.Session, text string) (*entities.Action, error)
 }
 
-type MatchServiceImpl struct {
+type ActionServiceImpl struct {
 	actionStorage storage.ActionStorage
 	grpcClient    pb.MatcherClient
 }
 
-func NewMatchService(actionStorage storage.ActionStorage, grpcConn *grpc.ClientConn) MatchService {
-	return &MatchServiceImpl{
+func NewActionService(actionStorage storage.ActionStorage, grpcConn *grpc.ClientConn) ActionService {
+	return &ActionServiceImpl{
 		actionStorage: actionStorage,
 		grpcClient:    pb.NewMatcherClient(grpcConn),
 	}
 }
 
-func (ms *MatchServiceImpl) ProcessMessage(ctx context.Context, session *entities.Session, text string) (*entities.Action, error) {
+func (ms *ActionServiceImpl) ProcessMessage(ctx context.Context, session *entities.Session, text string) (*entities.Action, error) {
 	if session.State == "" {
 		req := &pb.MatchScenarioRequest{
 			UserPrompt: text,

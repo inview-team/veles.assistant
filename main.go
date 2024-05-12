@@ -51,10 +51,10 @@ func main() {
 	database := mongoClient.Database(cfg.MongoDBName)
 	actionStorage := storage.NewMongoActionStorage(database, cfg.MongoActionCollection)
 
-	matchService := service.NewMatchService(actionStorage, conn)
+	actionService := service.NewActionService(actionStorage, conn)
 
 	executeService := service.NewExecuteService()
 
-	app := app.NewApp(cfg, sessionService, matchService, executeService, hub)
+	app := app.NewApp(cfg, sessionService, actionService, executeService, hub)
 	app.Start()
 }

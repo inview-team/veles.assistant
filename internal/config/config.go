@@ -41,7 +41,7 @@ func LoadConfig(configFilePath string) *Config {
 	viper.SetDefault("MONGO_URI", "mongodb://localhost:27017")
 	viper.SetDefault("MONGO_DB_NAME", "mydatabase")
 	viper.SetDefault("MONGO_ACTION_COLLECTION", "actions")
-	viper.SetDefault("MATCH_SERVICE_GRPC_ADDERSS", "localhost:50052")
+	viper.SetDefault("MATCH_SERVICE_GRPC_ADDERSS", "localhost:50051")
 	viper.AutomaticEnv()
 
 	return &Config{

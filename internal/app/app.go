@@ -24,16 +24,16 @@ type App struct {
 	wsSrv          *http.Server
 	httpSrv        *http.Server
 	sessionService service.SessionService
-	matchService   service.MatchService
+	actionService  service.ActionService
 	executeService service.ExecuteService
 	hub            hub.Hub
 }
 
-func NewApp(cfg *config.Config, ss service.SessionService, ms service.MatchService, es service.ExecuteService, hub hub.Hub) *App {
+func NewApp(cfg *config.Config, ss service.SessionService, as service.ActionService, es service.ExecuteService, hub hub.Hub) *App {
 	app := &App{
 		config:         cfg,
 		sessionService: ss,
-		matchService:   ms,
+		actionService:  as,
 		executeService: es,
 		hub:            hub,
 	}
@@ -95,7 +95,7 @@ func (a *App) startHTTP() {
 	log.Info("Starting HTTP server on ", address)
 
 	router := mux.NewRouter()
-	httpHandler := httpapi.NewHttpHandler(a.sessionService, a.matchService, a.executeService)
+	httpHandler := httpapi.NewHttpHandler(a.sessionService, a.actionService, a.executeService)
 	router.HandleFunc("/api/v1/session", httpHandler.StartSession).Methods("POST")
 	router.HandleFunc("/api/v1/session/action", httpHandler.HandleAction).Methods("POST")
 	router.HandleFunc("/api/v1/session/token", httpHandler.UpdateSessionToken).Methods("POST")
@@ -122,7 +122,7 @@ func (a *App) startWS() {
 	}
 
 	router := mux.NewRouter()
-	wsHandler := ws.NewWsHandler(a.sessionService, a.matchService, a.executeService, a.hub)
+	wsHandler := ws.NewWsHandler(a.sessionService, a.actionService, a.executeService, a.hub)
 	router.HandleFunc("/ws", wsHandler.HandleWs)
 
 	a.wsSrv = &http.Server{

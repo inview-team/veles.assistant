@@ -48,6 +48,7 @@ func (r *RedisSessionStorage) UpdateSession(session *entities.Session) error {
 	if err != nil {
 		return fmt.Errorf("error marshalling session: %v", err)
 	}
+
 	status := r.client.Set(ctx, session.ID, data, r.ttl)
 	if err := status.Err(); err != nil {
 		return fmt.Errorf("error saving session to redis: %v", err)
@@ -68,6 +69,12 @@ func (r *RedisSessionStorage) GetSession(sessionID string) (*entities.Session, e
 	if err := json.Unmarshal([]byte(val), &session); err != nil {
 		return nil, fmt.Errorf("error unmarshalling session data: %v", err)
 	}
+
+	status := r.client.Expire(ctx, sessionID, r.ttl)
+	if err := status.Err(); err != nil {
+		return nil, fmt.Errorf("error resetting TTL for session: %v", err)
+	}
+
 	return &session, nil
 }
 

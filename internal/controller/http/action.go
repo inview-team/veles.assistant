@@ -21,7 +21,7 @@ func (h *HttpHandler) HandleAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	action, err := h.matchService.ProcessMessage(r.Context(), session, req.Action)
+	action, err := h.actionService.ProcessMessage(r.Context(), session, req.Action)
 	if err != nil {
 		jsonResponse(w, http.StatusInternalServerError, common.ErrorResponse{Error: fmt.Sprintf("failed to process message: %v", err)})
 		return

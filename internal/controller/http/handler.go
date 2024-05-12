@@ -17,14 +17,14 @@ func jsonResponse(w http.ResponseWriter, status int, data interface{}) {
 
 type HttpHandler struct {
 	sessionService service.SessionService
-	matchService   service.MatchService
+	actionService  service.ActionService
 	executeService service.ExecuteService
 }
 
-func NewHttpHandler(ss service.SessionService, ms service.MatchService, es service.ExecuteService) *HttpHandler {
+func NewHttpHandler(ss service.SessionService, as service.ActionService, es service.ExecuteService) *HttpHandler {
 	return &HttpHandler{
 		sessionService: ss,
-		matchService:   ms,
+		actionService:  as,
 		executeService: es,
 	}
 }
