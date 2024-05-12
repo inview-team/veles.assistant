@@ -3,14 +3,16 @@ package ws
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 
 	"github.com/gorilla/websocket"
+	"github.com/inview-team/veles.assistant/pkg/common"
 )
 
 func (h *WsHandler) startSession(msg *Request, wsConn *websocket.Conn) ([]byte, error) {
-	var payload InitPayload
+	var payload common.InitRequest
 	if err := json.Unmarshal(msg.Payload, &payload); err != nil {
-		return nil, fmt.Errorf("error unmarshalling init payload: %v", err)
+		return jsonResponse(http.StatusBadRequest, fmt.Sprintf("error unmarshalling init payload: %v", err), nil)
 	}
 
 	conn := NewWebSocketConnection(wsConn)
@@ -18,29 +20,29 @@ func (h *WsHandler) startSession(msg *Request, wsConn *websocket.Conn) ([]byte, 
 	if payload.SessionID == "" {
 		sessionID, err := h.sessionService.StartSession(payload.Token)
 		if err != nil {
-			return nil, fmt.Errorf("error creating session: %v", err)
+			return jsonResponse(http.StatusInternalServerError, fmt.Sprintf("error creating session: %v", err), nil)
 		}
 		h.hub.Register(sessionID, conn)
-		return []byte(fmt.Sprintf("session_id: %s", sessionID)), nil
+		return jsonResponse(http.StatusOK, "session started", common.InitResponse{SessionID: sessionID})
 	}
 
 	session, err := h.sessionService.GetSession(payload.SessionID)
 	if err != nil {
-		return nil, fmt.Errorf("error retrieving session: %v", err)
+		return jsonResponse(http.StatusInternalServerError, fmt.Sprintf("error retrieving session: %v", err), nil)
 	}
 	h.hub.Register(session.ID, conn)
-	return []byte(fmt.Sprintf("session_id: %s, state: %s", session.ID)), nil
+	return jsonResponse(http.StatusOK, "session retrieved", common.InitResponse{SessionID: session.ID, State: session.State})
 }
 
 func (h *WsHandler) updateSessionToken(msg *Request, wsConn *websocket.Conn) ([]byte, error) {
-	var payload UpdateTokenPayload
+	var payload common.UpdateTokenRequest
 	if err := json.Unmarshal(msg.Payload, &payload); err != nil {
-		return nil, fmt.Errorf("error unmarshalling update token payload: %v", err)
+		return jsonResponse(http.StatusBadRequest, fmt.Sprintf("error unmarshalling update token payload: %v", err), nil)
 	}
 
 	if err := h.sessionService.UpdateSessionToken(payload.SessionID, payload.Token); err != nil {
-		return nil, fmt.Errorf("error updating session: %v", err)
+		return jsonResponse(http.StatusInternalServerError, fmt.Sprintf("error updating session token: %v", err), nil)
 	}
 
-	return nil, nil
+	return jsonResponse(http.StatusOK, "session token updated", nil)
 }

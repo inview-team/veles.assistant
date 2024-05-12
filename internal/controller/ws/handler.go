@@ -9,6 +9,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/inview-team/veles.assistant/internal/hub"
 	"github.com/inview-team/veles.assistant/internal/service"
+	"github.com/inview-team/veles.assistant/pkg/common"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -46,14 +47,13 @@ func (h *WsHandler) HandleWs(w http.ResponseWriter, req *http.Request) {
 
 	wsConn, err := h.Upgrader.Upgrade(w, req, nil)
 	if err != nil {
-		log.Error(fmt.Sprintf("Unable to upgrade to a WS connection, %s", err.Error()))
+		log.Error(fmt.Sprintf("Unable to upgrade to a WS connection: %s", err.Error()))
 		return
 	}
-
 	defer func(ws *websocket.Conn) {
 		err = ws.Close()
 		if err != nil {
-			log.Error(fmt.Sprintf("Unable to gracefully close WS connection, %s", err.Error()))
+			log.Error(fmt.Sprintf("Unable to gracefully close WS connection: %s", err.Error()))
 		}
 	}(wsConn)
 
@@ -65,7 +65,7 @@ func (h *WsHandler) HandleWs(w http.ResponseWriter, req *http.Request) {
 			if websocket.IsCloseError(err, websocket.CloseGoingAway, websocket.CloseNormalClosure, websocket.CloseAbnormalClosure) {
 				log.Info("Closing WS connection gracefully")
 			} else {
-				log.Error(fmt.Sprintf("Unable to read WS message, %s", err.Error()))
+				log.Error(fmt.Sprintf("Unable to read WS message: %s", err.Error()))
 				log.Info("Closing WS connection with error")
 			}
 			break
@@ -77,7 +77,7 @@ func (h *WsHandler) HandleWs(w http.ResponseWriter, req *http.Request) {
 				defer mu.Unlock()
 				resp, err := h.HandleMessage(message, wsConn)
 				if err != nil {
-					log.Error(fmt.Sprintf("Unable to handle WS request, %s", err.Error()))
+					log.Error(fmt.Sprintf("Unable to handle WS request: %s", err.Error()))
 					_ = wsConn.WriteMessage(msgType, []byte(fmt.Sprintf("WS Handle error: %s", err.Error())))
 				} else {
 					_ = wsConn.WriteMessage(msgType, resp)
@@ -95,18 +95,23 @@ func (h *WsHandler) initHandlers() {
 }
 
 func (h *WsHandler) HandleMessage(rawMsg []byte, wsConn *websocket.Conn) ([]byte, error) {
-	var msg *Request
+	var msg Request
 	if err := json.Unmarshal(rawMsg, &msg); err != nil {
-		return nil, fmt.Errorf("error unmarshalling message: %v", err)
+		return jsonResponse(http.StatusBadRequest, fmt.Sprintf("error unmarshalling message: %v", err), nil)
 	}
 
 	handlerFunc, ok := h.handlers[msg.Type]
 	if !ok {
-		handlerFunc = h.handlers["default"]
+		handlerFunc = h.handleDefault
 	}
-	return handlerFunc(msg, wsConn)
+	return handlerFunc(&msg, wsConn)
 }
 
 func (h *WsHandler) handleDefault(msg *Request, wsConn *websocket.Conn) ([]byte, error) {
-	return []byte("Unhandled message type"), nil
+	return jsonResponse(http.StatusBadRequest, "unhandled message type", nil)
+}
+
+func jsonResponse(status int, message string, data interface{}) ([]byte, error) {
+	resp := common.NewJsonResponse(status, message, data)
+	return json.Marshal(resp)
 }

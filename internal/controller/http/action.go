@@ -2,45 +2,36 @@ package http
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+
+	"github.com/inview-team/veles.assistant/pkg/common"
 )
 
-type ActionRequest struct {
-	SessionID string `json:"session_id"`
-	Action    string `json:"action"`
-}
-
-type ActionResult struct {
-	Result string `json:"result"`
-}
-
 func (h *HttpHandler) HandleAction(w http.ResponseWriter, r *http.Request) {
-	var request ActionRequest
-	err := json.NewDecoder(r.Body).Decode(&request)
-	if err != nil {
-		http.Error(w, "Bad Request: "+err.Error(), http.StatusBadRequest)
+	var req common.ActionRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		jsonResponse(w, http.StatusBadRequest, common.ErrorResponse{Error: fmt.Sprintf("invalid request: %v", err)})
 		return
 	}
 
-	session, err := h.sessionService.GetSession(request.SessionID)
+	session, err := h.sessionService.GetSession(req.SessionID)
 	if err != nil {
-		http.Error(w, "Session Not Found", http.StatusNotFound)
+		jsonResponse(w, http.StatusInternalServerError, common.ErrorResponse{Error: fmt.Sprintf("failed to get session: %v", err)})
 		return
 	}
 
-	action, err := h.matchService.ProcessMessage(r.Context(), session, request.Action)
+	action, err := h.matchService.ProcessMessage(r.Context(), session, req.Action)
 	if err != nil {
-		http.Error(w, "Action Match Failed: "+err.Error(), http.StatusInternalServerError)
+		jsonResponse(w, http.StatusInternalServerError, common.ErrorResponse{Error: fmt.Sprintf("failed to process message: %v", err)})
 		return
 	}
 
-	//result, err := h.executeService.ExecuteAction(session, action)
-	//if err != nil {
-	//	http.Error(w, "Action Execution Failed: "+err.Error(), http.StatusInternalServerError)
-	//	return
-	//}
+	err = h.sessionService.UpdateSessionState(session.ID, action.ID)
+	if err != nil {
+		jsonResponse(w, http.StatusInternalServerError, common.ErrorResponse{Error: fmt.Sprintf("failed to update session state: %v", err)})
+		return
+	}
 
-	response := ActionResult{Result: action.ID}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	jsonResponse(w, http.StatusOK, common.ActionResponse{ActionID: action.ID, State: session.State})
 }

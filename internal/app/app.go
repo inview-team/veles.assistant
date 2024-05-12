@@ -35,6 +35,7 @@ func NewApp(cfg *config.Config, ss service.SessionService, ms service.MatchServi
 		sessionService: ss,
 		matchService:   ms,
 		executeService: es,
+		hub:            hub,
 	}
 	return app
 }
@@ -89,12 +90,15 @@ func (a *App) awaitSignals() {
 }
 
 func (a *App) startHTTP() {
-	log.Info("Starting HTTP server")
+	address := fmt.Sprintf("%s:%d", a.config.HTTPHost, a.config.HTTPPort)
+
+	log.Info("Starting HTTP server on ", address)
 
 	router := mux.NewRouter()
 	httpHandler := httpapi.NewHttpHandler(a.sessionService, a.matchService, a.executeService)
-	router.HandleFunc("/api/v1/sessions", httpHandler.StartSession).Methods("POST")
-	router.HandleFunc("/api/v1/actions", httpHandler.HandleAction).Methods("POST")
+	router.HandleFunc("/api/v1/session", httpHandler.StartSession).Methods("POST")
+	router.HandleFunc("/api/v1/session/action", httpHandler.HandleAction).Methods("POST")
+	router.HandleFunc("/api/v1/session/token", httpHandler.UpdateSessionToken).Methods("POST")
 
 	a.httpSrv = &http.Server{
 		Addr:    fmt.Sprintf("%s:%d", a.config.HTTPHost, a.config.HTTPPort),

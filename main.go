@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"flag"
-	"log"
 	"time"
 
 	"github.com/inview-team/veles.assistant/internal/app"
@@ -12,6 +11,7 @@ import (
 	"github.com/inview-team/veles.assistant/internal/service"
 	"github.com/inview-team/veles.assistant/internal/storage"
 	"github.com/redis/go-redis/v9"
+	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"google.golang.org/grpc"
@@ -21,8 +21,8 @@ import (
 func main() {
 	conf := flag.String("conf", "./config.json", "Path to the configuration file")
 	flag.Parse()
-	cfg := config.LoadConfig(*conf)
 
+	cfg := config.LoadConfig(*conf)
 	redisClient := redis.NewClient(&redis.Options{
 		Addr:     cfg.RedisAddr,
 		Password: cfg.RedisPassword,
@@ -56,6 +56,5 @@ func main() {
 	executeService := service.NewExecuteService()
 
 	app := app.NewApp(cfg, sessionService, matchService, executeService, hub)
-
 	app.Start()
 }

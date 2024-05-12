@@ -1,6 +1,7 @@
 package config
 
 import (
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -24,13 +25,13 @@ type Config struct {
 func LoadConfig(configFilePath string) *Config {
 	viper.SetConfigFile(configFilePath)
 	if err := viper.ReadInConfig(); err != nil {
-		panic(err)
+		log.Warn(err)
 	}
 
 	viper.SetDefault("HTTP_HOST", "localhost")
-	viper.SetDefault("HTTP_PORT", 8090)
+	viper.SetDefault("HTTP_PORT", 8080)
 	viper.SetDefault("WEBSOCKET_HOST", "localhost")
-	viper.SetDefault("WEBSOCKET_PORT", 8091)
+	viper.SetDefault("WEBSOCKET_PORT", 8081)
 	viper.SetDefault("BACKEND_API_URL", "http://localhost:9999/")
 	viper.SetDefault("SESSION_DURATION", 300)
 	viper.SetDefault("GRPC_PORT", "50051")
