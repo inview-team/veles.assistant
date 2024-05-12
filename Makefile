@@ -15,3 +15,7 @@ redis:
 clean:
 	docker-compose down
 	docker system prune -af
+
+all:
+	make up
+	go run main.go
