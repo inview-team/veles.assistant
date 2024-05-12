@@ -2,8 +2,9 @@ syntax = "proto3";
 
 option go_package = "github.com/inview-team/veles.assistantt/pkg/proto/gen/pb";
 
-service Matcher {
+service NLPService {
   rpc MatchScenario (MatchScenarioRequest) returns (MatchScenarioResponse);
+  rpc ExtractArguments (ExtractArgumentsRequest) returns (ExtractArgumentsResponse);
 }
 
 message MatchScenarioRequest {
@@ -13,4 +14,17 @@ message MatchScenarioRequest {
 message MatchScenarioResponse {
   string scenario_name = 1;
   string root_id = 2;
+}
+
+message ExtractArgumentsRequest {
+  string user_prompt = 1;
+}
+
+message Argument {
+  string value = 1;
+  string type = 2;
+}
+
+message ExtractArgumentsResponse {
+  map<string, string> arguments = 1;
 }

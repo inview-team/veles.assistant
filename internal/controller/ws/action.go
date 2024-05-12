@@ -21,15 +21,15 @@ func (h *WsHandler) handleAction(msg *Request, wsConn *websocket.Conn) ([]byte, 
 		return jsonResponse(http.StatusInternalServerError, fmt.Sprintf("failed to get session: %v", err), nil)
 	}
 
-	action, err := h.actionService.ProcessMessage(context.Background(), session, payload.Action)
+	output, scenarioID, jobID, err := h.actionService.ProcessMessage(context.Background(), session, payload.Action)
 	if err != nil {
 		return jsonResponse(http.StatusInternalServerError, fmt.Sprintf("failed to process message: %v", err), nil)
 	}
 
-	err = h.sessionService.UpdateSessionState(session.ID, action.ID)
+	err = h.sessionService.UpdateSessionState(session.ID, scenarioID, jobID)
 	if err != nil {
 		return jsonResponse(http.StatusInternalServerError, fmt.Sprintf("failed to update session state: %v", err), nil)
 	}
 
-	return jsonResponse(http.StatusOK, "action processed", common.ActionResponse{ActionID: action.ID, State: session.State})
+	return jsonResponse(http.StatusOK, "action processed", common.ActionResponse{State: jobID, Text: output})
 }

@@ -16,8 +16,8 @@ type ActionRequest struct {
 }
 
 type ActionResponse struct {
-	ActionID string `json:"action_id"`
-	State    string `json:"state"`
+	State string `json:"state"`
+	Text  string `json:"text"`
 }
 
 type UpdateTokenRequest struct {

@@ -16,6 +16,7 @@ import (
 	"github.com/inview-team/veles.assistant/internal/controller/ws"
 	"github.com/inview-team/veles.assistant/internal/hub"
 	"github.com/inview-team/veles.assistant/internal/service"
+	"github.com/rs/cors"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -25,16 +26,14 @@ type App struct {
 	httpSrv        *http.Server
 	sessionService service.SessionService
 	actionService  service.ActionService
-	executeService service.ExecuteService
 	hub            hub.Hub
 }
 
-func NewApp(cfg *config.Config, ss service.SessionService, as service.ActionService, es service.ExecuteService, hub hub.Hub) *App {
+func NewApp(cfg *config.Config, ss service.SessionService, as service.ActionService, hub hub.Hub) *App {
 	app := &App{
 		config:         cfg,
 		sessionService: ss,
 		actionService:  as,
-		executeService: es,
 		hub:            hub,
 	}
 	return app
@@ -49,16 +48,16 @@ func (a *App) Start() {
 func (a *App) Stop() error {
 	var err error
 	if a.httpSrv != nil {
-		log.Info("Shutting down http server...")
+		log.Info("Shutting down HTTP server...")
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
 		if shutdownErr := a.httpSrv.Shutdown(ctx); shutdownErr != nil {
-			log.Errorf("Failed to shutdown http server: %v", shutdownErr)
+			log.Errorf("Failed to shutdown HTTP server: %v", shutdownErr)
 			err = shutdownErr
 		}
 
-		log.Info("Http server stopped")
+		log.Info("HTTP server stopped")
 	}
 
 	if a.wsSrv != nil {
@@ -95,14 +94,20 @@ func (a *App) startHTTP() {
 	log.Info("Starting HTTP server on ", address)
 
 	router := mux.NewRouter()
-	httpHandler := httpapi.NewHttpHandler(a.sessionService, a.actionService, a.executeService)
+	httpHandler := httpapi.NewHttpHandler(a.sessionService, a.actionService, a.hub)
 	router.HandleFunc("/api/v1/session", httpHandler.StartSession).Methods("POST")
-	router.HandleFunc("/api/v1/session/action", httpHandler.HandleAction).Methods("POST")
-	router.HandleFunc("/api/v1/session/token", httpHandler.UpdateSessionToken).Methods("POST")
+	router.HandleFunc("/api/v1/action", httpHandler.HandleAction).Methods("POST")
+
+	corsHandler := cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
+		AllowedHeaders:   []string{"*"},
+		AllowCredentials: true,
+	}).Handler(router)
 
 	a.httpSrv = &http.Server{
-		Addr:    fmt.Sprintf("%s:%d", a.config.HTTPHost, a.config.HTTPPort),
-		Handler: router,
+		Addr:    address,
+		Handler: corsHandler,
 	}
 
 	if err := a.httpSrv.ListenAndServe(); err != nil {
@@ -122,11 +127,18 @@ func (a *App) startWS() {
 	}
 
 	router := mux.NewRouter()
-	wsHandler := ws.NewWsHandler(a.sessionService, a.actionService, a.executeService, a.hub)
+	wsHandler := ws.NewWsHandler(a.sessionService, a.actionService, a.hub)
 	router.HandleFunc("/ws", wsHandler.HandleWs)
 
+	corsHandler := cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
+		AllowedHeaders:   []string{"*"},
+		AllowCredentials: true,
+	}).Handler(router)
+
 	a.wsSrv = &http.Server{
-		Handler: router,
+		Handler: corsHandler,
 	}
 
 	log.Infof("WebSocket server started on %s", address)

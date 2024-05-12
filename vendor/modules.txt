@@ -41,6 +41,15 @@ github.com/hashicorp/hcl/hcl/token
 github.com/hashicorp/hcl/json/parser
 github.com/hashicorp/hcl/json/scanner
 github.com/hashicorp/hcl/json/token
+# github.com/inview-team/veles.worker v0.0.0-00010101000000-000000000000 => ../veles.worker
+## explicit; go 1.21.6
+github.com/inview-team/veles.worker/pkg/domain/entities
+github.com/inview-team/veles.worker/pkg/domain/usecases/job_usecases
+github.com/inview-team/veles.worker/pkg/infrastructure/mongodb
+github.com/inview-team/veles.worker/pkg/infrastructure/mongodb/action_repository
+github.com/inview-team/veles.worker/pkg/infrastructure/mongodb/common
+github.com/inview-team/veles.worker/pkg/infrastructure/mongodb/job_repository
+github.com/inview-team/veles.worker/pkg/infrastructure/mongodb/scenario_repository
 # github.com/klauspost/compress v1.17.0
 ## explicit; go 1.18
 github.com/klauspost/compress
@@ -76,6 +85,10 @@ github.com/redis/go-redis/v9/internal/pool
 github.com/redis/go-redis/v9/internal/proto
 github.com/redis/go-redis/v9/internal/rand
 github.com/redis/go-redis/v9/internal/util
+# github.com/rs/cors v1.11.0
+## explicit; go 1.13
+github.com/rs/cors
+github.com/rs/cors/internal
 # github.com/sagikazarmark/locafero v0.4.0
 ## explicit; go 1.20
 github.com/sagikazarmark/locafero
@@ -319,3 +332,4 @@ gopkg.in/ini.v1
 # gopkg.in/yaml.v3 v3.0.1
 ## explicit
 gopkg.in/yaml.v3
+# github.com/inview-team/veles.worker => ../veles.worker

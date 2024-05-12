@@ -20,16 +20,14 @@ const (
 type WsHandler struct {
 	sessionService service.SessionService
 	actionService  service.ActionService
-	executeService service.ExecuteService
 	hub            hub.Hub
 	handlers       map[string]func(*Request, *websocket.Conn) ([]byte, error)
 	Upgrader       websocket.Upgrader
 }
 
-func NewWsHandler(ss service.SessionService, as service.ActionService, es service.ExecuteService, hub hub.Hub) *WsHandler {
+func NewWsHandler(ss service.SessionService, as service.ActionService, hub hub.Hub) *WsHandler {
 	handler := &WsHandler{
 		sessionService: ss,
-		executeService: es,
 		actionService:  as,
 		hub:            hub,
 		handlers:       make(map[string]func(*Request, *websocket.Conn) ([]byte, error)),

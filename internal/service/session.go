@@ -4,15 +4,15 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/inview-team/veles.assistant/internal/entities"
+	"github.com/inview-team/veles.assistant/internal/models"
 	"github.com/inview-team/veles.assistant/internal/storage"
 )
 
 type SessionService interface {
 	StartSession(token string) (string, error)
 	UpdateSessionToken(sessionID, token string) error
-	UpdateSessionState(sessionID, state string) error
-	GetSession(sessionID string) (*entities.Session, error)
+	UpdateSessionState(sessionID, scenarioID, jobID string) error
+	GetSession(sessionID string) (*models.Session, error)
 	CloseSession(sessionID string) error
 }
 
@@ -27,7 +27,7 @@ func NewSessionService(storage storage.SessionStorage) SessionService {
 }
 
 func (ss *SessionServiceImpl) StartSession(token string) (string, error) {
-	session := &entities.Session{
+	session := &models.Session{
 		ID:    uuid.New().String(),
 		Token: token,
 	}
@@ -49,19 +49,20 @@ func (ss *SessionServiceImpl) UpdateSessionToken(sessionID, token string) error 
 	return nil
 }
 
-func (ss *SessionServiceImpl) UpdateSessionState(sessionID, state string) error {
+func (ss *SessionServiceImpl) UpdateSessionState(sessionID, scenarioID, jobID string) error {
 	session, err := ss.storage.GetSession(sessionID)
 	if err != nil {
 		return fmt.Errorf("failed to retrieve session: %v", err)
 	}
-	session.State = state
+	session.ScenarioID = scenarioID
+	session.JobID = jobID
 	if err := ss.storage.UpdateSession(session); err != nil {
 		return fmt.Errorf("failed to update session: %v", err)
 	}
 	return nil
 }
 
-func (ss *SessionServiceImpl) GetSession(sessionID string) (*entities.Session, error) {
+func (ss *SessionServiceImpl) GetSession(sessionID string) (*models.Session, error) {
 	return ss.storage.GetSession(sessionID)
 }
 

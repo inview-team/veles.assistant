@@ -30,7 +30,7 @@ func (h *HttpHandler) StartSession(w http.ResponseWriter, r *http.Request) {
 		jsonResponse(w, http.StatusInternalServerError, common.ErrorResponse{Error: fmt.Sprintf("error retrieving session: %v", err)})
 		return
 	}
-	jsonResponse(w, http.StatusOK, common.InitResponse{SessionID: session.ID, State: session.State})
+	jsonResponse(w, http.StatusOK, common.InitResponse{SessionID: session.ID, State: session.JobID})
 }
 
 func (h *HttpHandler) UpdateSessionToken(w http.ResponseWriter, r *http.Request) {

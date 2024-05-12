@@ -31,7 +31,7 @@ func (h *WsHandler) startSession(msg *Request, wsConn *websocket.Conn) ([]byte, 
 		return jsonResponse(http.StatusInternalServerError, fmt.Sprintf("error retrieving session: %v", err), nil)
 	}
 	h.hub.Register(session.ID, conn)
-	return jsonResponse(http.StatusOK, "session retrieved", common.InitResponse{SessionID: session.ID, State: session.State})
+	return jsonResponse(http.StatusOK, "session retrieved", common.InitResponse{SessionID: session.ID, State: session.JobID})
 }
 
 func (h *WsHandler) updateSessionToken(msg *Request, wsConn *websocket.Conn) ([]byte, error) {

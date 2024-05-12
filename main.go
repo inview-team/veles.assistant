@@ -3,17 +3,19 @@ package main
 import (
 	"context"
 	"flag"
-	"time"
 
 	"github.com/inview-team/veles.assistant/internal/app"
 	"github.com/inview-team/veles.assistant/internal/config"
 	"github.com/inview-team/veles.assistant/internal/hub"
 	"github.com/inview-team/veles.assistant/internal/service"
 	"github.com/inview-team/veles.assistant/internal/storage"
+	"github.com/inview-team/veles.worker/pkg/domain/usecases/job_usecases"
+	"github.com/inview-team/veles.worker/pkg/infrastructure/mongodb"
+	"github.com/inview-team/veles.worker/pkg/infrastructure/mongodb/action_repository"
+	"github.com/inview-team/veles.worker/pkg/infrastructure/mongodb/job_repository"
+	"github.com/inview-team/veles.worker/pkg/infrastructure/mongodb/scenario_repository"
 	"github.com/redis/go-redis/v9"
 	log "github.com/sirupsen/logrus"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -39,22 +41,23 @@ func main() {
 	}
 	defer conn.Close()
 
-	mongoClient, err := mongo.Connect(context.Background(), options.Client().ApplyURI(cfg.MongoURI))
+	mongoClient, err := mongodb.NewClient(context.Background(), mongodb.Config{
+		IP:         cfg.MongoIP,
+		Port:       cfg.MongoPort,
+		User:       cfg.MongoUser,
+		Password:   cfg.MongoPassword,
+		AuthSource: cfg.MongoAuthSource,
+	})
 	if err != nil {
-		log.Fatalf("Failed to create MongoDB client: %v", err)
+		log.Fatalf("Failed to connect to mongoDB: %v", err)
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	if err := mongoClient.Ping(ctx, nil); err != nil {
-		log.Fatalf("Failed to connect to MongoDB: %v", err)
-	}
-	database := mongoClient.Database(cfg.MongoDBName)
-	actionStorage := storage.NewMongoActionStorage(database, cfg.MongoActionCollection)
 
-	actionService := service.NewActionService(actionStorage, conn)
+	actionStorage := action_repository.NewActionRepository(mongoClient)
+	jobRepo := job_repository.NewJobRepository(mongoClient)
+	scenarioRepository := scenario_repository.NewScenarioRepository(mongoClient)
+	executor := job_usecases.New(jobRepo, actionStorage)
+	actionService := service.NewActionService(actionStorage, jobRepo, scenarioRepository, executor, conn)
 
-	executeService := service.NewExecuteService()
-
-	app := app.NewApp(cfg, sessionService, actionService, executeService, hub)
+	app := app.NewApp(cfg, sessionService, actionService, hub)
 	app.Start()
 }

@@ -6,14 +6,14 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/inview-team/veles.assistant/internal/entities"
+	"github.com/inview-team/veles.assistant/internal/models"
 	"github.com/redis/go-redis/v9"
 )
 
 type SessionStorage interface {
-	CreateSession(session *entities.Session) error
-	UpdateSession(session *entities.Session) error
-	GetSession(sessionID string) (*entities.Session, error)
+	CreateSession(session *models.Session) error
+	UpdateSession(session *models.Session) error
+	GetSession(sessionID string) (*models.Session, error)
 	DeleteSession(sessionID string) error
 }
 
@@ -29,7 +29,7 @@ func NewRedisSessionStorage(client *redis.Client, ttl int) *RedisSessionStorage 
 	}
 }
 
-func (r *RedisSessionStorage) CreateSession(session *entities.Session) error {
+func (r *RedisSessionStorage) CreateSession(session *models.Session) error {
 	ctx := context.Background()
 	data, err := json.Marshal(session)
 	if err != nil {
@@ -42,7 +42,7 @@ func (r *RedisSessionStorage) CreateSession(session *entities.Session) error {
 	return nil
 }
 
-func (r *RedisSessionStorage) UpdateSession(session *entities.Session) error {
+func (r *RedisSessionStorage) UpdateSession(session *models.Session) error {
 	ctx := context.Background()
 	data, err := json.Marshal(session)
 	if err != nil {
@@ -56,7 +56,7 @@ func (r *RedisSessionStorage) UpdateSession(session *entities.Session) error {
 	return nil
 }
 
-func (r *RedisSessionStorage) GetSession(sessionID string) (*entities.Session, error) {
+func (r *RedisSessionStorage) GetSession(sessionID string) (*models.Session, error) {
 	ctx := context.Background()
 	val, err := r.client.Get(ctx, sessionID).Result()
 	if err == redis.Nil {
@@ -65,7 +65,7 @@ func (r *RedisSessionStorage) GetSession(sessionID string) (*entities.Session, e
 		return nil, fmt.Errorf("error retrieving session from redis: %v", err)
 	}
 
-	var session entities.Session
+	var session models.Session
 	if err := json.Unmarshal([]byte(val), &session); err != nil {
 		return nil, fmt.Errorf("error unmarshalling session data: %v", err)
 	}

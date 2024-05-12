@@ -16,7 +16,11 @@ type Config struct {
 	RedisAddr               string
 	RedisPassword           string
 	RedisDB                 int
-	MongoURI                string
+	MongoIP                 string
+	MongoPort               int
+	MongoUser               string
+	MongoPassword           string
+	MongoAuthSource         string
 	MongoDBName             string
 	MongoActionCollection   string
 	MatchServiceGRPCAddress string
@@ -28,20 +32,23 @@ func LoadConfig(configFilePath string) *Config {
 		log.Warn(err)
 	}
 
-	viper.SetDefault("HTTP_HOST", "localhost")
-	viper.SetDefault("HTTP_PORT", 8080)
-	viper.SetDefault("WEBSOCKET_HOST", "localhost")
-	viper.SetDefault("WEBSOCKET_PORT", 8081)
-	viper.SetDefault("BACKEND_API_URL", "http://localhost:9999/")
-	viper.SetDefault("SESSION_DURATION", 300)
 	viper.SetDefault("GRPC_PORT", "50051")
+	viper.SetDefault("HTTP_HOST", "localhost")
+	viper.SetDefault("HTTP_PORT", 30002)
+	viper.SetDefault("WEBSOCKET_HOST", "localhost")
+	viper.SetDefault("WEBSOCKET_PORT", 30003)
+	viper.SetDefault("SESSION_DURATION", 300)
 	viper.SetDefault("REDIS_ADDR", "localhost:6379")
 	viper.SetDefault("REDIS_PASSWORD", "")
 	viper.SetDefault("REDIS_DB", 0)
-	viper.SetDefault("MONGO_URI", "mongodb://localhost:27017")
-	viper.SetDefault("MONGO_DB_NAME", "mydatabase")
-	viper.SetDefault("MONGO_ACTION_COLLECTION", "actions")
-	viper.SetDefault("MATCH_SERVICE_GRPC_ADDERSS", "localhost:50051")
+	viper.SetDefault("MONGO_IP", "localhost")
+	viper.SetDefault("MONGO_PORT", 27017)
+	viper.SetDefault("MONGO_USER", "root")
+	viper.SetDefault("MONGO_PASSWORD", "password")
+	viper.SetDefault("MONGO_AUTH_SOURCE", "admin")
+	viper.SetDefault("MONGO_DB_NAME", "assistant")
+	viper.SetDefault("MONGO_ACTION_COLLECTION", "scenario")
+	viper.SetDefault("MATCH_SERVICE_GRPC_ADDRESS", "localhost:50051")
 	viper.AutomaticEnv()
 
 	return &Config{
@@ -55,9 +62,13 @@ func LoadConfig(configFilePath string) *Config {
 		RedisAddr:               viper.GetString("REDIS_ADDR"),
 		RedisPassword:           viper.GetString("REDIS_PASSWORD"),
 		RedisDB:                 viper.GetInt("REDIS_DB"),
-		MongoURI:                viper.GetString("MONGO_URI"),
+		MongoIP:                 viper.GetString("MONGO_IP"),
+		MongoPort:               viper.GetInt("MONGO_PORT"),
+		MongoUser:               viper.GetString("MONGO_USER"),
+		MongoPassword:           viper.GetString("MONGO_PASSWORD"),
+		MongoAuthSource:         viper.GetString("MONGO_AUTH_SOURCE"),
 		MongoDBName:             viper.GetString("MONGO_DB_NAME"),
 		MongoActionCollection:   viper.GetString("MONGO_ACTION_COLLECTION"),
-		MatchServiceGRPCAddress: viper.GetString("MATCH_SERVICE_GRPC_ADDERSS"),
+		MatchServiceGRPCAddress: viper.GetString("MATCH_SERVICE_GRPC_ADDRESS"),
 	}
 }

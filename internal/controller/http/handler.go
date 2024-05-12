@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/inview-team/veles.assistant/internal/hub"
 	"github.com/inview-team/veles.assistant/internal/service"
 )
 
@@ -17,14 +18,14 @@ func jsonResponse(w http.ResponseWriter, status int, data interface{}) {
 
 type HttpHandler struct {
 	sessionService service.SessionService
+	hub            hub.Hub
 	actionService  service.ActionService
-	executeService service.ExecuteService
 }
 
-func NewHttpHandler(ss service.SessionService, as service.ActionService, es service.ExecuteService) *HttpHandler {
+func NewHttpHandler(ss service.SessionService, as service.ActionService, hub hub.Hub) *HttpHandler {
 	return &HttpHandler{
+		hub:            hub,
 		sessionService: ss,
 		actionService:  as,
-		executeService: es,
 	}
 }
