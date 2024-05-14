@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/inview-team/veles.assistant/internal/config"
 	httpapi "github.com/inview-team/veles.assistant/internal/controller/http"
@@ -90,10 +91,11 @@ func (a *App) awaitSignals() {
 
 func (a *App) startHTTP() {
 	address := fmt.Sprintf("%s:%d", a.config.HTTPHost, a.config.HTTPPort)
-
 	log.Info("Starting HTTP server on ", address)
 
 	router := mux.NewRouter()
+	loggingRouter := handlers.LoggingHandler(os.Stdout, router)
+
 	httpHandler := httpapi.NewHttpHandler(a.sessionService, a.actionService, a.hub)
 	router.HandleFunc("/api/v1/session", httpHandler.StartSession).Methods("POST")
 	router.HandleFunc("/api/v1/action", httpHandler.HandleAction).Methods("POST")
@@ -103,7 +105,7 @@ func (a *App) startHTTP() {
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
 		AllowedHeaders:   []string{"*"},
 		AllowCredentials: true,
-	}).Handler(router)
+	}).Handler(loggingRouter)
 
 	a.httpSrv = &http.Server{
 		Addr:    address,
@@ -127,6 +129,8 @@ func (a *App) startWS() {
 	}
 
 	router := mux.NewRouter()
+	loggingRouter := handlers.LoggingHandler(os.Stdout, router)
+
 	wsHandler := ws.NewWsHandler(a.sessionService, a.actionService, a.hub)
 	router.HandleFunc("/ws", wsHandler.HandleWs)
 
@@ -135,7 +139,7 @@ func (a *App) startWS() {
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
 		AllowedHeaders:   []string{"*"},
 		AllowCredentials: true,
-	}).Handler(router)
+	}).Handler(loggingRouter)
 
 	a.wsSrv = &http.Server{
 		Handler: corsHandler,

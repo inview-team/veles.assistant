@@ -38,7 +38,6 @@ func NewActionService(as entities.ActionRepository, js entities.JobRepository, s
 func (as *actionService) ProcessMessage(ctx context.Context, session *models.Session, text string) (string, string, string, error) {
 	args := make(map[string]entities.Variable)
 	var jobID, scenarioID string
-	session.ScenarioID = ""
 	if session.ScenarioID == "" {
 		req := &pb.MatchScenarioRequest{
 			UserPrompt: text,
@@ -107,13 +106,10 @@ func (as *actionService) ProcessMessage(ctx context.Context, session *models.Ses
 
 	nextJobID, hasNextJob := scenario.JobSequence[entities.JobID(jobID)]
 	if hasNextJob {
-		session.JobID = string(nextJobID)
-		session.ScenarioID = ""
-		session.JobID = ""
+		jobID = string(nextJobID)
 	} else {
-		session.ScenarioID = ""
-		session.JobID = ""
+		scenarioID = ""
+		jobID = ""
 	}
-
-	return result.String(), "", "", nil
+	return result.String(), scenarioID, jobID, nil
 }

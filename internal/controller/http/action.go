@@ -1,12 +1,14 @@
 package http
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/inview-team/veles.assistant/pkg/common"
+	log "github.com/sirupsen/logrus"
 )
 
 func (h *HttpHandler) HandleAction(w http.ResponseWriter, r *http.Request) {
@@ -37,19 +39,20 @@ func (h *HttpHandler) HandleAction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	session.Token = token
+	go func() {
+		output, scenarioID, jobID, err := h.actionService.ProcessMessage(context.Background(), session, req.Action)
+		if err != nil {
+			log.Errorf("failed to process message: %v", err)
+		}
 
-	output, scenarioID, jobID, err := h.actionService.ProcessMessage(r.Context(), session, req.Action)
-	if err != nil {
-		jsonResponse(w, http.StatusInternalServerError, common.ErrorResponse{Error: fmt.Sprintf("failed to process message: %v", err)})
-		return
-	}
-
-	err = h.sessionService.UpdateSessionState(session.ID, scenarioID, jobID)
-	if err != nil {
-		jsonResponse(w, http.StatusInternalServerError, common.ErrorResponse{Error: fmt.Sprintf("failed to update session state: %v", err)})
-		return
-	}
-	outHub, _ := json.Marshal(common.ActionResponse{State: jobID, Text: output})
-	h.hub.SendMessage(session.ID, outHub)
-	jsonResponse(w, http.StatusOK, common.ActionResponse{State: jobID, Text: output})
+		err = h.sessionService.UpdateSessionState(session.ID, scenarioID, jobID)
+		if err != nil {
+			log.Errorf("failed to update session state: %v", err)
+		}
+		outHub, err := json.Marshal(common.ActionResponse{State: jobID, Text: output})
+		log.Info("sending to hub err: ", err)
+		log.Info("sending to hub session: ", output, jobID, scenarioID, session.ID)
+		h.hub.SendMessage(session.ID, outHub)
+	}()
+	jsonResponse(w, http.StatusOK, common.ActionResponse{State: "", Text: "received"})
 }

@@ -10,7 +10,7 @@ type WebSocketConnection struct {
 }
 
 func (wc *WebSocketConnection) SendMessage(data []byte) error {
-	return wc.conn.WriteMessage(websocket.BinaryMessage, data)
+	return wc.conn.WriteMessage(websocket.TextMessage, data)
 }
 
 func (wc *WebSocketConnection) Close() error {

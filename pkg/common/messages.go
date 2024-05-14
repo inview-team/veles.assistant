@@ -7,7 +7,7 @@ type InitRequest struct {
 
 type InitResponse struct {
 	SessionID string `json:"session_id"`
-	State     string `json:"state,omitempty"`
+	State     string `json:"text,omitempty"`
 }
 
 type ActionRequest struct {

@@ -23,7 +23,7 @@ func (h *WsHandler) startSession(msg *Request, wsConn *websocket.Conn) ([]byte, 
 			return jsonResponse(http.StatusInternalServerError, fmt.Sprintf("error creating session: %v", err), nil)
 		}
 		h.hub.Register(sessionID, conn)
-		return jsonResponse(http.StatusOK, "session started", common.InitResponse{SessionID: sessionID})
+		return jsonResponse(http.StatusOK, "session started", common.InitResponse{SessionID: sessionID, State: "Приввет! Я могу помочь узнать баланс или перевести средства!"})
 	}
 
 	session, err := h.sessionService.GetSession(payload.SessionID)

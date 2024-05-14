@@ -33,13 +33,13 @@ func LoadConfig(configFilePath string) *Config {
 	}
 
 	viper.SetDefault("GRPC_PORT", "50051")
-	viper.SetDefault("HTTP_HOST", "localhost")
+	viper.SetDefault("HTTP_HOST", "0.0.0.0")
 	viper.SetDefault("HTTP_PORT", 30002)
-	viper.SetDefault("WEBSOCKET_HOST", "localhost")
+	viper.SetDefault("WEBSOCKET_HOST", "0.0.0.0")
 	viper.SetDefault("WEBSOCKET_PORT", 30003)
 	viper.SetDefault("SESSION_DURATION", 300)
 	viper.SetDefault("REDIS_ADDR", "localhost:6379")
-	viper.SetDefault("REDIS_PASSWORD", "")
+	viper.SetDefault("REDIS_PASSWORD", "rootix")
 	viper.SetDefault("REDIS_DB", 0)
 	viper.SetDefault("MONGO_IP", "localhost")
 	viper.SetDefault("MONGO_PORT", 27017)
@@ -48,7 +48,7 @@ func LoadConfig(configFilePath string) *Config {
 	viper.SetDefault("MONGO_AUTH_SOURCE", "admin")
 	viper.SetDefault("MONGO_DB_NAME", "assistant")
 	viper.SetDefault("MONGO_ACTION_COLLECTION", "scenario")
-	viper.SetDefault("MATCH_SERVICE_GRPC_ADDRESS", "localhost:50051")
+	viper.SetDefault("MATCH_SERVICE_GRPC_ADDRESS", "localhost:50052")
 	viper.AutomaticEnv()
 
 	return &Config{

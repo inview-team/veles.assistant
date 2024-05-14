@@ -3,6 +3,8 @@ package hub
 import (
 	"fmt"
 	"sync"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type Hub interface {
@@ -45,8 +47,10 @@ func (h *MemHub) Unregister(sessionID string) {
 func (h *MemHub) SendMessage(sessionID string, message []byte) error {
 	h.mu.Lock()
 	defer h.mu.Unlock()
+	log.Info("sending to hub session: ", sessionID)
 	conn, ok := h.connections[sessionID]
 	if !ok {
+		log.Errorf("not found conn for session: ", sessionID)
 		return fmt.Errorf("no connection found for session_id %s", sessionID)
 	}
 	return conn.SendMessage(message)
